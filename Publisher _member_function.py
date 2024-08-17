@@ -1,49 +1,36 @@
 import rclpy
+import random
 from rclpy.node import Node
-import math
-from geometry_msgs.msg import Point
 from std_msgs.msg import String
+from geometry_msgs.msg import Point
 
-class MinimalSubscriber(Node):
-
+class MinimalPublisher(Node):
     def __init__(self):
-        super().__init__('minimal_subscriber')
-        # Create a subscription to the Point topic
-        self.subscription = self.create_subscription(
-            Point,
-            'topic',
-            self.listener_callback,
-            10)
-        # Create a publisher for the String messages
-        self.publisher_ = self.create_publisher(String, 'distance_topic', 10)
-        self.subscription  # prevent unused variable warning
-        
-    def distance(self, x, y, z):
-        return math.sqrt(x**2 + y**2 + z**2)
+        super().__init__('minimal_publisher')
+        self.publisher_ = self.create_publisher(String, 'topic', 10)
+        timer_period = 1  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.i = 0
 
-    def listener_callback(self, msg):
-        self.get_logger().info('Starting Call Back')
-        dist = self.distance(msg.x, msg.y, msg.z)
-        self.get_logger().info('Distance calculated')
-       
-        # Create and populate the String message
+    def timer_callback(self):
+        msg = Point()
+        
+        msg.x = random.uniform(0,100)
+        msg.y = random.uniform(0,100)
+        msg.z = random.uniform(0,100)
+        
         output = String()
-        output.data = f'{dist}'
+        output.data = f'x={msg.x}, y={msg.y}, z={msg.z}'
         
-        # Log the distance
-        self.get_logger().info(f'Distance: "{output.data}"')
-        
-        # Publish the String message
         self.publisher_.publish(output)
-        
+        self.get_logger().info('Publishing: "%s"' % output.data)
+        self.i += 1
+
 def main(args=None):
     rclpy.init(args=args)
-
-    minimal_subscriber = MinimalSubscriber()
-
-    rclpy.spin(minimal_subscriber)
-
-    minimal_subscriber.destroy_node()
+    minimal_publisher = MinimalPublisher()
+    rclpy.spin(minimal_publisher)  # Keeps the node running and processing events
+    minimal_publisher.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
