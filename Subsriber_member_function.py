@@ -2,8 +2,7 @@ import rclpy
 from rclpy.node import Node
 import math
 from geometry_msgs.msg import Point
-from std_msgs.msg import String
-
+from std_msgs.msg import Float64
 class MinimalSubscriber(Node):
 
     def __init__(self):
@@ -15,7 +14,7 @@ class MinimalSubscriber(Node):
             self.listener_callback,
             10)
         # Create a publisher for the String messages
-        self.publisher_ = self.create_publisher(String, 'distance_topic', 10)
+        self.publisher_ = self.create_publisher(Float64, 'distance_topic', 10)
         self.subscription  # prevent unused variable warning
         
     def distance(self, x, y, z):
@@ -27,14 +26,13 @@ class MinimalSubscriber(Node):
         self.get_logger().info('Distance calculated')
        
         # Create and populate the String message
-        output = String()
-        output.data = f'{dist}'
+        output = Float64()
+        output.data = dist
         
-        # Log the distance
-        self.get_logger().info(f'Distance: "{output.data}"')
         
-        # Publish the String message
         self.publisher_.publish(output)
+        self.get_logger().info('Published distance: %f' % dist)
+
         
 def main(args=None):
     rclpy.init(args=args)
